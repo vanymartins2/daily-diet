@@ -1,9 +1,13 @@
-import { useCallback, useEffect, useState } from 'react'
+import { useState } from 'react'
 import { Alert } from 'react-native'
-import { useFocusEffect, useNavigation } from '@react-navigation/native'
+import { useNavigation } from '@react-navigation/native'
 import { Header } from '@components/Header'
 import { Button } from '@components/Button'
-import { Checkbox } from '@components/Checkbox'
+import { OptionButton } from '@components/OptionButton'
+
+import { addMeal } from '@storage/addMeal'
+import { AppError } from '@utils/AppError'
+import uuid from 'react-native-uuid'
 import {
   Container,
   DateTime,
@@ -15,20 +19,6 @@ import {
   Options,
   Time
 } from './styles'
-import { AppError } from '@utils/AppError'
-import uuid from 'react-native-uuid'
-import { addMeal } from '@storage/addMeal'
-import { getMeals } from '@storage/getMeals'
-import { MealStorageDTO } from '@storage/MealStorageDTO'
-
-interface Meal {
-  id: string | number[]
-  name: string
-  description: string
-  date: string
-  time: string
-  onDiet: boolean
-}
 
 export function NewMeal() {
   const [name, setName] = useState('')
@@ -36,39 +26,14 @@ export function NewMeal() {
   const [date, setDate] = useState('')
   const [time, setTime] = useState('')
   const [onDiet, setOnDiet] = useState(false)
-  const [options, setOptions] = useState([
-    {
-      label: 'Sim',
-      type: 'PRIMARY',
-      checked: false
-    },
-    {
-      label: 'Não',
-      type: 'SECONDARY',
-      checked: false
-    }
-  ])
-  const [data, setData] = useState([])
+  const [selected, setSelected] = useState('')
 
   const navigation = useNavigation()
 
-  function handleCheck(label: string) {
-    label === 'Sim' ? setOnDiet(true) : onDiet
+  function handleSelected(value: string) {
+    setSelected(value)
 
-    setOptions(prevState =>
-      prevState.map(option => {
-        if (option.label === label) {
-          return {
-            ...option,
-            checked: !option.checked
-          }
-        }
-        return {
-          ...option,
-          checked: false
-        }
-      })
-    )
+    value === 'yes' ? setOnDiet(true) : setOnDiet(false)
   }
 
   async function handleNew() {
@@ -149,15 +114,17 @@ export function NewMeal() {
         <Label>Está dentro da dieta?</Label>
 
         <Options>
-          {options.map(option => (
-            <Checkbox
-              key={option.label}
-              label={option.label}
-              type={option.type}
-              checked={option.checked}
-              onValueChange={() => handleCheck(option.label)}
-            />
-          ))}
+          <OptionButton
+            label="Sim"
+            type="PRIMARY"
+            checked={selected === 'yes' ? true : false}
+            onPress={() => handleSelected('yes')}
+          />
+          <OptionButton
+            label="Não"
+            checked={selected === 'no' ? true : false}
+            onPress={() => handleSelected('no')}
+          />
         </Options>
 
         <Button

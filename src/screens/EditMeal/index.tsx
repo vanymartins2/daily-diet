@@ -1,7 +1,9 @@
-import { useState } from 'react'
+import { useCallback, useState } from 'react'
+import { useFocusEffect, useRoute } from '@react-navigation/native'
 import { Header } from '@components/Header'
 import { Button } from '@components/Button'
-import { Checkbox } from '@components/Checkbox'
+import { OptionButton } from '@components/OptionButton'
+import { getMeals } from '@storage/getMeals'
 import {
   Container,
   DateTime,
@@ -14,40 +16,49 @@ import {
   Options
 } from './styles'
 
-export function EditMeal() {
-  const [options, setOptions] = useState([
-    {
-      label: 'Sim',
-      type: 'PRIMARY',
-      checked: false,
-      disabled: false
-    },
-    {
-      label: 'Não',
-      type: 'SECONDARY',
-      checked: false,
-      disabled: false
-    }
-  ])
-  const [date, setDate] = useState('')
-  const [time, setTime] = useState('')
+interface RouteParams {
+  id: string | number[]
+}
 
-  function handleCheck(label: string) {
-    setOptions(prevState =>
-      prevState.map(option => {
-        if (option.label === label) {
-          return {
-            ...option,
-            checked: !option.checked
-          }
-        }
-        return {
-          ...option,
-          checked: false
-        }
-      })
-    )
+export function EditMeal() {
+  const [data, setData] = useState({
+    name: '',
+    description: '',
+    date: '',
+    time: '',
+    onDiet: false
+  })
+  const [selected, setSelected] = useState('')
+
+  const route = useRoute()
+  const { id } = route.params as RouteParams
+
+  function handleSelected(value: string) {
+    setSelected(value)
   }
+
+  async function fetchMealData() {
+    const meals = await getMeals()
+    const editingMeal = meals.find(meal => meal.id === id)
+
+    if (editingMeal) {
+      setData({
+        name: editingMeal?.name,
+        description: editingMeal?.description,
+        date: editingMeal?.date,
+        time: editingMeal?.time,
+        onDiet: editingMeal?.onDiet
+      })
+
+      editingMeal?.onDiet ? setSelected('yes') : setSelected('no')
+    }
+  }
+
+  useFocusEffect(
+    useCallback(() => {
+      fetchMealData()
+    }, [])
+  )
 
   return (
     <Container>
@@ -55,13 +66,20 @@ export function EditMeal() {
 
       <Form>
         <Label>Nome</Label>
-        <Input />
+        <Input
+          value={data.name}
+          onChangeText={newName => setData({ ...data, name: newName })}
+        />
 
         <Label>Descrição</Label>
         <Input
           multiline
           numberOfLines={5}
           style={{ textAlignVertical: 'top' }}
+          value={data.description}
+          onChangeText={newDescription =>
+            setData({ ...data, description: newDescription })
+          }
         />
 
         <DateTime>
@@ -72,8 +90,8 @@ export function EditMeal() {
               options={{
                 format: 'DD/MM/YYYY'
               }}
-              value={date}
-              onChangeText={setDate}
+              value={data.date}
+              onChangeText={newDate => setData({ ...data, date: newDate })}
               keyboardType="numeric"
             />
           </Date>
@@ -85,8 +103,8 @@ export function EditMeal() {
               options={{
                 format: 'HH:mm'
               }}
-              value={time}
-              onChangeText={setTime}
+              value={data.time}
+              onChangeText={newTime => setData({ ...data, time: newTime })}
               keyboardType="numeric"
             />
           </Time>
@@ -95,15 +113,17 @@ export function EditMeal() {
         <Label>Está dentro da dieta?</Label>
 
         <Options>
-          {options.map(option => (
-            <Checkbox
-              key={option.label}
-              label={option.label}
-              type={option.type}
-              checked={option.checked}
-              onValueChange={() => handleCheck(option.label)}
-            />
-          ))}
+          <OptionButton
+            label="Sim"
+            type="PRIMARY"
+            checked={selected === 'yes' ? true : false}
+            onPress={() => handleSelected('yes')}
+          />
+          <OptionButton
+            label="Não"
+            checked={selected === 'no' ? true : false}
+            onPress={() => handleSelected('no')}
+          />
         </Options>
 
         <Button title="Salvar alterações" style={{ marginTop: 'auto' }} />

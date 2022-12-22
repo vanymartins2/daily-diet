@@ -1,6 +1,6 @@
 import { useCallback, useState } from 'react'
-import { useFocusEffect, useNavigation } from '@react-navigation/native'
 import { Alert, SectionList } from 'react-native'
+import { useFocusEffect, useNavigation } from '@react-navigation/native'
 import { Button } from '@components/Button'
 import { Header } from '@components/Header'
 import { Percent } from '@components/Percent'
@@ -8,9 +8,9 @@ import { Loading } from '@components/Loading'
 import { MealCard } from '@components/MealCard'
 import { useTheme } from 'styled-components'
 import { Plus } from 'phosphor-react-native'
-import { Container, Text, Date, Content } from './styles'
 import { getMeals } from '@storage/getMeals'
 import { MealStorageDTO } from '@storage/MealStorageDTO'
+import { Container, Text, Date, Content } from './styles'
 
 interface MealGroup {
   title: string
@@ -76,8 +76,6 @@ export function Home() {
     }, [])
   )
 
-  console.log(mealGroups)
-
   return (
     <Container>
       <Header />
@@ -99,18 +97,24 @@ export function Home() {
           <Plus size={18} color={COLORS.WHITE} weight="bold" />
         </Button>
 
-        <SectionList
-          sections={mealGroups}
-          renderSectionHeader={({ section }) => <Date>{section.title}</Date>}
-          renderItem={({ item }) => (
-            <MealCard
-              hour={item.time}
-              meal={item.name}
-              status={item.onDiet ? 'PRIMARY' : 'SECONDARY'}
-              onPress={() => handleShowMealDetails(item.id)}
-            />
-          )}
-        />
+        {isLoading ? (
+          <Loading />
+        ) : (
+          <SectionList
+            sections={mealGroups}
+            renderSectionHeader={({ section }) => <Date>{section.title}</Date>}
+            renderItem={({ item }) => (
+              <MealCard
+                hour={item.time}
+                meal={item.name}
+                status={item.onDiet ? 'PRIMARY' : 'SECONDARY'}
+                onPress={() => handleShowMealDetails(item.id)}
+              />
+            )}
+            showsVerticalScrollIndicator={false}
+            style={{ marginBottom: 90 }}
+          />
+        )}
       </Content>
     </Container>
   )
