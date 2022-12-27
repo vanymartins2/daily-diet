@@ -1,4 +1,4 @@
-const MEAL_COLLECTION = '@daily-diet:meals'
-const MEAL_GROUPS = '@daily-diet:groups'
+const MEAL_COLLECTION = '@daily-diet:meal'
+const STATISTICS_COLLECTION = '@daily-diet:statistic'
 
-export { MEAL_COLLECTION, MEAL_GROUPS }
+export { MEAL_COLLECTION, STATISTICS_COLLECTION }

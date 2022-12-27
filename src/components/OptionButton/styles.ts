@@ -11,7 +11,6 @@ export const Container = styled(TouchableOpacity)<OptionButtonStyleProps>`
   flex-direction: row;
   height: 50px;
   padding: 16px;
-  margin: 0 8px 0 0;
   align-items: center;
   justify-content: center;
   border-radius: 6px;

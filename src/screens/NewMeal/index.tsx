@@ -1,13 +1,12 @@
 import { useState } from 'react'
 import { Alert } from 'react-native'
 import { useNavigation } from '@react-navigation/native'
+import uuid from 'react-native-uuid'
 import { Header } from '@components/Header'
 import { Button } from '@components/Button'
 import { OptionButton } from '@components/OptionButton'
-
-import { addMeal } from '@storage/addMeal'
+import { addMeal } from '@storage/meal/addMeal'
 import { AppError } from '@utils/AppError'
-import uuid from 'react-native-uuid'
 import {
   Container,
   DateTime,
@@ -46,7 +45,7 @@ export function NewMeal() {
       }
 
       const newMeal = {
-        id: uuid.v4(),
+        id: uuid.v4().toString(),
         name,
         description,
         date,
@@ -54,14 +53,17 @@ export function NewMeal() {
         onDiet
       }
 
-      await addMeal(newMeal, date)
+      await addMeal(newMeal)
 
       navigation.navigate('feedback', { onDiet })
     } catch (error) {
       if (error instanceof AppError) {
-        Alert.alert('Nova turma', error.message)
+        Alert.alert('Nova refeição', error.message)
       } else {
-        Alert.alert('Nova turma', 'Não foi possível criar uma nova turma.')
+        Alert.alert(
+          'Nova refeição',
+          'Não foi possível criar uma nova refeição.'
+        )
         console.log(error)
       }
     }
@@ -124,6 +126,7 @@ export function NewMeal() {
             label="Não"
             checked={selected === 'no' ? true : false}
             onPress={() => handleSelected('no')}
+            style={{ marginLeft: 8 }}
           />
         </Options>
 

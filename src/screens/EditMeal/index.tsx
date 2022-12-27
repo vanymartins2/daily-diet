@@ -1,9 +1,15 @@
 import { useCallback, useState } from 'react'
-import { useFocusEffect, useRoute } from '@react-navigation/native'
+import { Alert } from 'react-native'
+import {
+  useFocusEffect,
+  useNavigation,
+  useRoute
+} from '@react-navigation/native'
 import { Header } from '@components/Header'
 import { Button } from '@components/Button'
 import { OptionButton } from '@components/OptionButton'
-import { getMeals } from '@storage/getMeals'
+import { getMeals } from '@storage/meal/getMeals'
+import { editMealById } from '@storage/meal/editMealById'
 import {
   Container,
   DateTime,
@@ -17,7 +23,7 @@ import {
 } from './styles'
 
 interface RouteParams {
-  id: string | number[]
+  id: string
 }
 
 export function EditMeal() {
@@ -30,11 +36,30 @@ export function EditMeal() {
   })
   const [selected, setSelected] = useState('')
 
+  const navigation = useNavigation()
   const route = useRoute()
   const { id } = route.params as RouteParams
 
   function handleSelected(value: string) {
     setSelected(value)
+
+    value === 'no'
+      ? setData({ ...data, onDiet: false })
+      : setData({ ...data, onDiet: true })
+  }
+
+  async function handleSaveEditedMeal() {
+    try {
+      await editMealById(data, id)
+
+      navigation.navigate('details', { id })
+    } catch (error) {
+      console.log(error)
+      Alert.alert(
+        'Editar refeição',
+        'Não foi possível salvar as novas informações.'
+      )
+    }
   }
 
   async function fetchMealData() {
@@ -123,10 +148,15 @@ export function EditMeal() {
             label="Não"
             checked={selected === 'no' ? true : false}
             onPress={() => handleSelected('no')}
+            style={{ marginLeft: 8 }}
           />
         </Options>
 
-        <Button title="Salvar alterações" style={{ marginTop: 'auto' }} />
+        <Button
+          title="Salvar alterações"
+          onPress={handleSaveEditedMeal}
+          style={{ marginTop: 'auto' }}
+        />
       </Form>
     </Container>
   )

@@ -10,14 +10,14 @@ import { Tag } from '@components/Tag'
 import { Button } from '@components/Button'
 import { Header } from '@components/Header'
 import { Loading } from '@components/Loading'
-import { getMeals } from '@storage/getMeals'
+import { getMeals } from '@storage/meal/getMeals'
 import { MealStorageDTO } from '@storage/MealStorageDTO'
-import { removeMealById } from '@storage/removeMealById'
+import { removeMealById } from '@storage/meal/removeMealById'
 import { PencilSimpleLine, Trash } from 'phosphor-react-native'
 import { Container, Content, Text, Subtitle, Title } from './styles'
 
 interface RouteParams {
-  id: string | number[]
+  id: string
 }
 
 export function Details() {

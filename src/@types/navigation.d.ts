@@ -5,10 +5,10 @@ export declare global {
       new: undefined
       statistics: undefined
       edit: {
-        id: string | number[]
+        id: string
       }
       details: {
-        id: string | number[]
+        id: string
       }
       feedback: {
         onDiet: boolean

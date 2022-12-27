@@ -1,15 +1,17 @@
 import { useCallback, useState } from 'react'
 import { Alert, SectionList } from 'react-native'
 import { useFocusEffect, useNavigation } from '@react-navigation/native'
+import { Plus } from 'phosphor-react-native'
+import { useTheme } from 'styled-components'
 import { Button } from '@components/Button'
 import { Header } from '@components/Header'
 import { Percent } from '@components/Percent'
 import { Loading } from '@components/Loading'
 import { MealCard } from '@components/MealCard'
-import { useTheme } from 'styled-components'
-import { Plus } from 'phosphor-react-native'
-import { getMeals } from '@storage/getMeals'
+import { getMeals } from '@storage/meal/getMeals'
 import { MealStorageDTO } from '@storage/MealStorageDTO'
+import { saveStatistics } from '@storage/statistics/saveStatistics'
+import { calcOverallStatistics } from '@utils/calcOverallStatistics'
 import { Container, Text, Date, Content } from './styles'
 
 interface MealGroup {
@@ -20,9 +22,12 @@ interface MealGroup {
 export function Home() {
   const [isLoading, setIsLoading] = useState(true)
   const [mealGroups, setMealGroups] = useState<MealGroup[]>([])
+  const [statistics, setStatistics] = useState({
+    onDiet: '',
+    offDiet: ''
+  })
 
   const { COLORS } = useTheme()
-
   const navigation = useNavigation()
 
   function handleOpenStatistics() {
@@ -60,19 +65,35 @@ export function Home() {
       setMealGroups(result)
     } catch (error) {
       console.log(error)
-      Alert.alert('Turmas', 'Não foi possível carregar a lista')
+      Alert.alert('Refeições', 'Não foi possível carregar a lista')
     } finally {
       setIsLoading(false)
     }
   }
 
-  function handleShowMealDetails(id: string | number[]) {
+  async function calcAndSaveStatistics() {
+    try {
+      const storedMeals = await getMeals()
+
+      const statisticsResults = calcOverallStatistics(storedMeals)
+
+      await saveStatistics(statisticsResults)
+
+      setStatistics(statisticsResults)
+    } catch (error) {
+      console.log(error)
+      Alert.alert('Estatísticas', 'Não foi possível salvar as estatísticas')
+    }
+  }
+
+  function handleShowMealDetails(id: string) {
     navigation.navigate('details', { id })
   }
 
   useFocusEffect(
     useCallback(() => {
       fetchGroups()
+      calcAndSaveStatistics()
     }, [])
   )
 
@@ -82,8 +103,15 @@ export function Home() {
 
       <Content>
         <Percent
-          title="90,87%"
-          subtitle="das refeições dentro da dieta."
+          title={
+            statistics.onDiet >= '40%' ? statistics.onDiet : statistics.offDiet
+          }
+          subtitle={
+            statistics.onDiet >= '40%'
+              ? 'das refeições dentro da dieta.'
+              : 'das refeições fora da dieta.'
+          }
+          type={statistics.onDiet >= '40%' ? 'PRIMARY' : 'SECONDARY'}
           onPress={handleOpenStatistics}
         />
 

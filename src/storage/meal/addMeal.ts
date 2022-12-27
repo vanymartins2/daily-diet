@@ -1,9 +1,9 @@
 import AsyncStorage from '@react-native-async-storage/async-storage'
 import { getMeals } from './getMeals'
-import { MealStorageDTO } from './MealStorageDTO'
-import { MEAL_COLLECTION } from './storageConfig'
+import { MealStorageDTO } from '../MealStorageDTO'
+import { MEAL_COLLECTION } from '../storageConfig'
 
-export async function addMeal(newMeal: MealStorageDTO, date: string) {
+export async function addMeal(newMeal: MealStorageDTO) {
   try {
     const storedMeals = await getMeals()
 

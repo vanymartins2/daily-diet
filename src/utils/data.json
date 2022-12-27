@@ -1,0 +1,18 @@
+[
+  {
+    "id": "akeoriikskrmngs",
+    "name": "Sanduíche",
+    "description": "Sanduíche de pão integral com atum e salada de alface e tomate",
+    "date": "12/08/2022",
+    "time": "16:00",
+    "onDiet": true
+  },
+  {
+    "id": "aleokrjsngsljsh",
+    "name": "X-tudo",
+    "description": "Xis completo da lancheria do bairro",
+    "date": "12/08/2022",
+    "time": "16:00",
+    "onDiet": false
+  }
+]

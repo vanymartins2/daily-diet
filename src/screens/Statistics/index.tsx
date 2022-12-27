@@ -1,8 +1,13 @@
-import { DataCard } from '@components/DataCard'
+import { useCallback, useState } from 'react'
+import { useFocusEffect } from '@react-navigation/native'
+import { sortBy } from 'lodash'
 import { Header } from '@components/Header'
+import { DataCard } from '@components/DataCard'
+import { getMeals } from '@storage/meal/getMeals'
+import { MealStorageDTO } from '@storage/MealStorageDTO'
+import { calcOverallStatistics } from '@utils/calcOverallStatistics'
 import {
   Container,
-  HeaderStyleProps,
   Title,
   Subtitle,
   Content,
@@ -10,38 +15,111 @@ import {
   Overall
 } from './styles'
 
-interface StatisticsProps {
-  type?: HeaderStyleProps
-}
+export function Statistics() {
+  const [data, setData] = useState({
+    total: 0,
+    mealsOnDiet: 0,
+    mealsOffDiet: 0,
+    overall: {
+      onDiet: '',
+      offDiet: ''
+    }
+  })
+  const [meals, setMeals] = useState<MealStorageDTO[]>([])
 
-export function Statistics({ type = 'PRIMARY' }: StatisticsProps) {
+  const { total, mealsOnDiet, mealsOffDiet, overall } = data
+
+  async function fetchOverallStatistics() {
+    const storedMeals = await getMeals()
+
+    const total = storedMeals.length
+    const mealsOnDiet = storedMeals.filter(meal => meal.onDiet === true).length
+    const mealsOffDiet = storedMeals.filter(
+      meal => meal.onDiet === false
+    ).length
+
+    const overall = calcOverallStatistics(storedMeals)
+
+    setData({
+      total,
+      mealsOnDiet,
+      mealsOffDiet,
+      overall
+    })
+
+    setMeals(storedMeals)
+  }
+
+  useFocusEffect(
+    useCallback(() => {
+      fetchOverallStatistics()
+    }, [])
+  )
+
+  function calcSequenceOfMealsOnDiet() {
+    const sortedByDate = sortBy(meals, 'date')
+
+    const onDiet = true
+    const threshold = 1
+    let count = 0
+
+    let numberInSeq = 0
+
+    var sequenceFound = false
+
+    sortedByDate.forEach(x => {
+      if (x.onDiet === onDiet) {
+        numberInSeq++
+        if (numberInSeq >= threshold && sequenceFound === false) {
+          count++
+          sequenceFound = true
+          numberInSeq = 0
+        }
+      } else {
+        numberInSeq = 0
+        sequenceFound = false
+      }
+    })
+
+    return count
+  }
+
   return (
-    <Container type={type}>
-      <Header showBackButton type={type} />
+    <Container type={overall.onDiet >= '40%' ? 'PRIMARY' : 'SECONDARY'}>
+      <Header
+        showBackButton
+        type={overall.onDiet >= '40%' ? 'PRIMARY' : 'SECONDARY'}
+      />
 
-      <Title>90,87%</Title>
-      <Subtitle>das refeições dentro da dieta.</Subtitle>
+      <Title>
+        {overall.onDiet >= '40%' ? overall.onDiet : overall.offDiet}
+      </Title>
+      <Subtitle>
+        {overall.onDiet >= '40%'
+          ? 'das refeições dentro da dieta.'
+          : 'das refeições fora da dieta'}
+      </Subtitle>
 
       <Content>
         <ContentHeader>Estatísticas gerais</ContentHeader>
 
         <DataCard
-          title="4"
+          title={calcSequenceOfMealsOnDiet().toString()}
           subtitle="melhor sequência de pratos dentro da dieta."
         />
 
-        <DataCard title="109" subtitle="refeições registradas." />
+        <DataCard title={`${total}`} subtitle="refeições registradas." />
 
         <Overall>
           <DataCard
-            title="32"
+            title={`${mealsOnDiet}`}
             subtitle="refeições dentro da dieta."
             variant="SUCCESS"
             style={{ width: '50%' }}
           />
 
           <DataCard
-            title="77"
+            title={`${mealsOffDiet}`}
             subtitle="refeições fora da dieta."
             variant="FAIL"
             style={{ width: '50%', marginLeft: 12 }}
