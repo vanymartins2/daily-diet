@@ -22,8 +22,6 @@ export async function editMealById(editedMeal: EditMealDataDTO, id: string) {
       return obj
     })
 
-    // const storage = [...storedMeals, updatedMeal]
-
     await AsyncStorage.setItem(MEAL_COLLECTION, JSON.stringify(newData))
   } catch (error) {
     throw error
